@@ -26,8 +26,8 @@ public static class AndroidGalleryHelper
             {
                 if (task.IsCompleted)
                 {
-                    var result = task.Result;
-                    if (result.ResultCode == AndroidIntent.Result.Ok)
+                    AndroidIntent.ActivityResult result = task.Result;
+                    if (result.ResultCode == AndroidIntent.AndroidActivityResult.RESULT_OK)
                     {
                         using (var uri = result.Intent.Call<AndroidJavaObject>("getData"))
                         {

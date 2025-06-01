@@ -93,15 +93,15 @@ public class AppMainController : MonoBehaviour
             if (enable)
             {
 
-                image.color = Color.black;
-                text.color = Color.black;
-                tab.GetComponent<Image>().color = new Color(0.82f, 0.82f, 0.82f, 1);
+                image.color = AppConstant.SELECTED_COLOR;// Color.black;
+                text.color = Color.white;
+                //tab.GetComponent<Image>().color = new Color(0.82f, 0.82f, 0.82f, 1);
             }
             else
             {
                 image.color = AppConstant.UNSELECTED_COLOR;
                 text.color = AppConstant.UNSELECTED_COLOR;
-                tab.GetComponent<Image>().color = Color.white;
+                //tab.GetComponent<Image>().color = Color.white;
             }
         }
     }

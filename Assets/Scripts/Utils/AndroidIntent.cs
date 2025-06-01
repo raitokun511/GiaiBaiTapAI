@@ -1,4 +1,5 @@
 ﻿#if UNITY_ANDROID && !UNITY_EDITOR
+using System;
 using UnityEngine;
 
 public static class AndroidIntent
@@ -13,6 +14,10 @@ public static class AndroidIntent
         {
             return chooser;
         }
+    }
+    public static void StartActivityForResult(AndroidJavaObject intent, int requestCode)
+    {
+        currentActivity.Call("startActivityForResult", intent, requestCode);
     }
 
     // Thêm các hàm khác cho xử lý ActivityResult nếu cần
@@ -32,10 +37,11 @@ public static class AndroidIntent
         return tcs.Task;
     }
 
-    private class AndroidActivityResultCallback : AndroidJavaProxy
+    private class AndroidActivityResultCallback : AndroidJavaProxy, IDisposable
     {
         private int requestCode;
         private System.Threading.Tasks.TaskCompletionSource<ActivityResult> taskCompletionSource;
+        private bool _isDisposed = false;
 
         public AndroidActivityResultCallback(int requestCode, System.Threading.Tasks.TaskCompletionSource<ActivityResult> taskCompletionSource) : base("android.content.BroadcastReceiver")
         {
@@ -45,6 +51,12 @@ public static class AndroidIntent
 
         public void onReceive(AndroidJavaObject context, AndroidJavaObject intent)
         {
+            if (_isDisposed)
+            {
+                Debug.LogWarning("onReceive called on a disposed AndroidActivityResultCallback.");
+                return;
+            }
+
             int receivedRequestCode = intent.Call<int>("getIntExtra", "requestCode", -1);
             if (receivedRequestCode == requestCode)
             {
@@ -60,8 +72,41 @@ public static class AndroidIntent
                 {
                     localBroadcastManager.Call("unregisterReceiver", this);
                 }
+                Dispose();
             }
         }
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+
+            _isDisposed = true;
+            Debug.Log($"Disposing AndroidActivityResultCallback for request code: {requestCode}");
+
+            // Hủy đăng ký BroadcastReceiver
+            try
+            {
+                using (var unityPlayerClass = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+                using (var unityPlayerActivity = unityPlayerClass.GetStatic<AndroidJavaObject>("currentActivity"))
+                using (var unityPlayerContext = unityPlayerActivity.Call<AndroidJavaObject>("getApplicationContext"))
+                using (var localBroadcastManagerClass = new AndroidJavaClass("androidx.localbroadcastmanager.content.LocalBroadcastManager"))
+                using (var localBroadcastManager = localBroadcastManagerClass.CallStatic<AndroidJavaObject>("getInstance", unityPlayerContext))
+                {
+                    localBroadcastManager.Call("unregisterReceiver", this);
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error unregistering receiver: {e.Message}");
+            }
+        }
+    }
+    public static class AndroidActivityResult
+    {
+        // Các mã kết quả tiêu chuẩn của Android Activity
+        // (Lưu ý: các giá trị này tương ứng với Activity.RESULT_OK, Activity.RESULT_CANCELED trong Android Java)
+        public const int RESULT_OK = -1;
+        public const int RESULT_CANCELED = 0;
+        public const int RESULT_FIRST_USER = 1; // Mã kết quả bắt đầu cho người dùng định nghĩa
     }
 
     public struct ActivityResult
