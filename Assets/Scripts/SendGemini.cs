@@ -16,9 +16,9 @@ using Newtonsoft.Json;
 public class SendGemini : MonoBehaviour
 {
     private Texture2D selectedTexture;
-    private string apiKey = "AIzaSyBXY3c3kFAHgsPsbjWJNNC014zH602lsW0";
+    private string apiKey = "XXX";
     private string apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
-    private static string xapiKey = "AIzaSyBXY3c3kFAHgsPsbjWJNNC014zH602lsW0";
+    private static string xapiKey = "XXX";
     private static string xapiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
     private string captionResult = "";
     private string prompt = "Explain how a simple neural network works.";
