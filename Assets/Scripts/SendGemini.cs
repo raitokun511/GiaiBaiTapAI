@@ -16,77 +16,11 @@ using Newtonsoft.Json;
 public class SendGemini : MonoBehaviour
 {
     private Texture2D selectedTexture;
-    private string apiKey = "XXX";
-    private string apiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
-    private static string xapiKey = "XXX";
-    private static string xapiUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
-    private string captionResult = "";
+    
     private string prompt = "Explain how a simple neural network works.";
     private string responseText = "";
 
 
-    public static IEnumerator SendPromptToGemini(string promptText, Action<string> onComplete)
-    {
-        if (string.IsNullOrEmpty(xapiKey))
-        {
-            Debug.LogError("API Key Gemini chưa được thiết lập!");
-            onComplete(null);
-            yield break;
-        }
-
-        string url = $"{xapiUrl}{xapiKey}";
-        Debug.Log("Send URL:" +  url);
-
-        GeminiRequest requestData = new GeminiRequest
-        {
-            contents = new Content[]
-            {
-                new Content
-                {
-                    parts = new Part[]
-                    {
-                        new Part { text = promptText }
-                    }
-                }
-            }
-        };
-
-        string jsonPayload = JsonConvert.SerializeObject(requestData);
-
-        using (UnityWebRequest www = new UnityWebRequest(url, UnityWebRequest.kHttpVerbPOST))
-        {
-            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonPayload);
-            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            www.downloadHandler = new DownloadHandlerBuffer();
-            www.SetRequestHeader("Content-Type", "application/json");
-            Debug.Log("Send WWW");
-            yield return www.SendWebRequest();
-
-            string result = null;
-            if (www.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError($"Lỗi khi gửi prompt đến Gemini: {www.error}");
-                Debug.LogError($"Response Code: {www.responseCode}");
-                Debug.LogError($"Response Body: {www.downloadHandler.text}");
-            }
-            else
-            {
-                Debug.Log($"Phản hồi từ Gemini: {www.downloadHandler.text}");
-                GeminiResponse response = JsonConvert.DeserializeObject<GeminiResponse>(www.downloadHandler.text);
-                if (response?.candidates != null && response.candidates.Length > 0 && response.candidates[0].content.parts != null && response.candidates[0].content.parts.Length > 0)
-                {
-                    result = response.candidates[0].content.parts[0].text;
-                }
-                else
-                {
-                    Debug.LogWarning("Không tìm thấy kết quả hợp lệ trong phản hồi từ Gemini.");
-                    Debug.Log($"Full Response: {www.downloadHandler.text}");
-                }
-            }
-            onComplete?.Invoke(result);
-
-        }
-    }
     public static IEnumerator GetSendImageToGemini(Texture2D texture, System.Action<string> onComplete)
     {
         if (texture == null)
@@ -117,7 +51,7 @@ public class SendGemini : MonoBehaviour
           ]
         }}";
 
-        using (UnityWebRequest www = new UnityWebRequest(xapiUrl + xapiKey, "POST"))
+        using (UnityWebRequest www = new UnityWebRequest("xapiUrl + xapiKey", "POST"))
         {
             byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
             www.uploadHandler = new UploadHandlerRaw(bodyRaw);

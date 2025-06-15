@@ -1,13 +1,14 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
-using System;
 
-public class TestAPI : MonoBehaviour
+public class CallAIRequest : MonoBehaviour
 {
-    public static TestAPI instance;
+
+    public static CallAIRequest instance;
     //NewGeminiAPI
     //"https://script.google.com/macros/s/AKfycbxuIDUhngfcjgeMv07NGI7A69beJw2ABnRfL-cVAK78BGPsS5dAgVpGfs_7T3jTDN63cg/exec"
 
@@ -317,7 +318,7 @@ public class TestAPI : MonoBehaviour
     public async void TestGeminiChatFromUnity(string prompt)
     {
         string testMessage = prompt;
-            //"Cho tôi 1 câu hỏi trắc nghiệm ngẫu nhiên về hóa học phổ thông, chủ đề vô cơ - kim loại. cùng trả về 4 đáp án trong đó có 1 đáp án đúng.\r\nCấu trúc bạn trả về dạng json sau và không thêm bất cứ dữ liệu, câu chào nào:\r\n{\r\n\"question\":\"\",\r\n\"right_ans\":\"\",\r\n\"wrong_1\":\"\",\r\n\"wrong_2\":\"\",\r\n\"wrong_3\":\"\"\r\n}";
+        //"Cho tôi 1 câu hỏi trắc nghiệm ngẫu nhiên về hóa học phổ thông, chủ đề vô cơ - kim loại. cùng trả về 4 đáp án trong đó có 1 đáp án đúng.\r\nCấu trúc bạn trả về dạng json sau và không thêm bất cứ dữ liệu, câu chào nào:\r\n{\r\n\"question\":\"\",\r\n\"right_ans\":\"\",\r\n\"wrong_1\":\"\",\r\n\"wrong_2\":\"\",\r\n\"wrong_3\":\"\"\r\n}";
         Debug.Log("Gửi câu hỏi: " + testMessage);
 
         string geminiAnswer = await SendMessageToGemini(testMessage);
@@ -363,5 +364,4 @@ public class TestAPI : MonoBehaviour
             Debug.LogWarning("Hãy gán một Texture2D vào trường 'Test Texture' trong Inspector để thử nghiệm chức năng gửi ảnh.");
         }
     }
-
 }

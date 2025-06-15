@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -6,6 +7,8 @@ using UnityEngine.UI;
 
 public class SolveController : MonoBehaviour
 {
+    public static SolveController instance;
+
     [SerializeField]
     WebCamFullScreenCover WebCamFullScreenCover;
     [SerializeField]
@@ -17,6 +20,13 @@ public class SolveController : MonoBehaviour
 
     public Button submitButton;
 
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+        }
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -34,7 +44,7 @@ public class SolveController : MonoBehaviour
         if (!rawImage.texture.isReadable)
         {
             Debug.Log("Texture not read");
-            outputText.text += "\nTexture not read";
+            //outputText.text += "\nTexture not read";
             RenderTexture tempRT = new RenderTexture(rawImage.texture.width, rawImage.texture.height, 0);
             Graphics.Blit(rawImage.texture, tempRT);
             // Kích hoạt RenderTexture
@@ -57,15 +67,33 @@ public class SolveController : MonoBehaviour
             Texture2D newTexture = new Texture2D((int)width, (int)height, TextureFormat.ARGB32, false);
             newTexture.SetPixels32(newTexture.GetPixels32());
             newTexture.Apply();
-            outputText.text += "\nNew Texture:" + rawImage.texture.width + "//" + rawImage.texture.height;
+            //outputText.text += "\nNew Texture:" + rawImage.texture.width + "//" + rawImage.texture.height;
 
             ProcessImage(newTexture);
+            CloseCamera();
         }
     }
-    void ProcessImage(Texture2D imageToSend)
+    public void ProcessImage(Texture2D imageToSend)
     {
+        string requestPrompt = StringConst.IMAGE_SEND_REQUEST;
         if (imageToSend != null)
         {
+
+            StartCoroutine(TestAPI.instance.GetSendImageToGemini(imageToSend, requestPrompt, (response) =>
+            {
+                //Giải bài toán : Cho 0.5 mol HCl tác dụng 0.4 mol NaOH, tính khối lượng muốn sinh ra
+                outputText.text = response + "\n" + "\n" + "\n" + "\n" + "\n" + "\n" + "\n" + "\n";
+                LayoutRebuilder.ForceRebuildLayoutImmediate(outputText.GetComponent<RectTransform>()); // Đảm bảo kích thước được cập nhật ngay lập tức
+
+                RectTransform outputRect = outputText.GetComponent<RectTransform>();
+                Debug.Log("Submit Response:" + (-outputRect.rect.height / 2f));
+                outputRect.anchoredPosition = new Vector2(outputRect.anchoredPosition.x, -outputRect.rect.height / 2f);
+                outputContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, outputRect.rect.width);
+                outputContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, outputRect.rect.height);
+
+            }));
+
+            /*
             StartCoroutine(SendGemini.GetSendImageToGemini(imageToSend, (caption) =>
             {
                 if (!string.IsNullOrEmpty(caption))
@@ -81,6 +109,7 @@ public class SolveController : MonoBehaviour
                     Debug.LogError("Failed to get result from Gemini.");
                 }
             }));
+            */
         }
         else
         {
@@ -95,6 +124,20 @@ public class SolveController : MonoBehaviour
         {
             Debug.Log("Submit: " + input.text);
 
+            StartCoroutine(TestAPI.instance.SendMessageToGemini(input.text, (response) =>
+            {
+                //Giải bài toán : Cho 0.5 mol HCl tác dụng 0.4 mol NaOH, tính khối lượng muốn sinh ra
+                outputText.text = response + "\n" + "\n" + "\n" + "\n" + "\n" + "\n" + "\n" + "\n";
+                LayoutRebuilder.ForceRebuildLayoutImmediate(outputText.GetComponent<RectTransform>()); // Đảm bảo kích thước được cập nhật ngay lập tức
+
+                RectTransform outputRect = outputText.GetComponent<RectTransform>();
+                Debug.Log("Submit Response:" + (-outputRect.rect.height / 2f));
+                outputRect.anchoredPosition = new Vector2(outputRect.anchoredPosition.x, -outputRect.rect.height / 2f);
+                outputContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, outputRect.rect.width);
+                outputContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, outputRect.rect.height);
+
+            }));
+            /*
             StartCoroutine(SendGemini.SendPromptToGemini(input.text, (response) =>
             {
                 //Giải bài toán : Cho 0.5 mol HCl tác dụng 0.4 mol NaOH, tính khối lượng muốn sinh ra
@@ -108,6 +151,7 @@ public class SolveController : MonoBehaviour
                 outputContent.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, outputRect.rect.height);
 
             }));
+            */
         }
     }
 
@@ -122,5 +166,6 @@ public class SolveController : MonoBehaviour
     public void CloseCamera()
     {
         WebCamFullScreenCover.CloseWebcam();
+        webcamRectTransform.gameObject.SetActive(false);
     }
 }

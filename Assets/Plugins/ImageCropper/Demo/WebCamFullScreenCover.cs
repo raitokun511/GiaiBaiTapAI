@@ -93,7 +93,7 @@ public class WebCamFullScreenCover : MonoBehaviour
         webcamTexture = new WebCamTexture(deviceToUse.name);
         displayImage.texture = webcamTexture;
         webcamTexture.Play();
-
+        /*
         // Chờ webcam thực sự khởi tạo và có kích thước
         yield return new WaitUntil(() => webcamTexture.width > 100 && webcamTexture.height > 100);
 
@@ -104,6 +104,7 @@ public class WebCamFullScreenCover : MonoBehaviour
         lastIsVerticallyMirrored = webcamTexture.videoVerticallyMirrored;
 
         SetupDisplay();
+        */
     }
     public void CloseWebcam()
     {

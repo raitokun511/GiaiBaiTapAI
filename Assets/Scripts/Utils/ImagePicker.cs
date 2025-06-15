@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Android;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
@@ -22,7 +23,25 @@ public class ImagePicker : MonoBehaviour
         }
     }
 
-    async void OnPickImageButtonClicked()
+    public async void OnPickImageButtonClicked()
+    {
+#if UNITY_ANDROID
+        // Kiểm tra và yêu cầu quyền READ_EXTERNAL_STORAGE
+        if (!Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead))
+        {
+            PermissionCallbacks callbacks = new PermissionCallbacks();
+            callbacks.PermissionGranted += OnPermissionGranted;
+            callbacks.PermissionDenied += OnPermissionDenied;
+            callbacks.PermissionDeniedAndDontAskAgain += OnPermissionDeniedAndDontAskAgain;
+
+            Permission.RequestUserPermission(Permission.ExternalStorageRead, callbacks);
+            return; // Đợi callback xử lý quyền
+        }
+#endif
+        // Nếu đã có quyền hoặc không phải Android, thì tiến hành chọn ảnh
+        await PickImage();
+    }
+    async Task PickImage()
     {
         string imagePath = await AndroidGalleryHelper.PickImageFromGallery();
 
@@ -56,4 +75,24 @@ public class ImagePicker : MonoBehaviour
             Debug.LogError("Không thể load ảnh từ đường dẫn: " + www.error);
         }
     }
+
+#if UNITY_ANDROID
+    private async void OnPermissionGranted(string permissionName)
+    {
+        Debug.Log($"Permission {permissionName} GRANTED!");
+        await PickImage(); // Tiến hành chọn ảnh sau khi được cấp quyền
+    }
+
+    private void OnPermissionDenied(string permissionName)
+    {
+        Debug.Log($"Permission {permissionName} DENIED!");
+        // Thông báo cho người dùng rằng không thể chọn ảnh nếu không có quyền
+    }
+
+    private void OnPermissionDeniedAndDontAskAgain(string permissionName)
+    {
+        Debug.Log($"Permission {permissionName} DENIED and DON'T ASK AGAIN!");
+        // Hướng dẫn người dùng vào cài đặt để cấp quyền thủ công
+    }
+#endif
 }
