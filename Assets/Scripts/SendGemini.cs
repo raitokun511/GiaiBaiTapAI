@@ -51,37 +51,6 @@ public class SendGemini : MonoBehaviour
           ]
         }}";
 
-        using (UnityWebRequest www = new UnityWebRequest("xapiUrl + xapiKey", "POST"))
-        {
-            byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonData);
-            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-            www.downloadHandler = new DownloadHandlerBuffer();
-            www.SetRequestHeader("Content-Type", "application/json");
-
-            yield return www.SendWebRequest();
-
-            string result = null;
-            if (www.result == UnityWebRequest.Result.Success)
-            {
-                Debug.Log("Gemini Response: " + www.downloadHandler.text);
-                try
-                {
-                    GeminiResponse responseData = JsonUtility.FromJson<GeminiResponse>(www.downloadHandler.text);
-                    result = responseData?.candidates?[0]?.content?.parts?[0]?.text;
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError("Error parsing Gemini response: " + e.Message);
-                    result = "Error parsing response.";
-                }
-            }
-            else
-            {
-                Debug.LogError("Gemini API request failed: " + www.error);
-                result = "API request failed: " + www.error + "\n" + Encoding.UTF8.GetString(bodyRaw);
-            }
-            onComplete?.Invoke(result);
-        }
     }
 }
 
